@@ -21,21 +21,24 @@
             return {
                 currentMenu:-1,
                 treeShow:true,
-                userType:4,
-                token:{}
+                userType:1,
+                token:{
+                    toke:"7ceace472ce046909271fd0c90da2800"
+                }
             }
         },
         computed: {
 
         },
         created(){
-            this.token=JSON.parse(window.sessionStorage.getItem('archives_token'))
+
+            // this.token=JSON.parse(window.sessionStorage.getItem('archives_token'))
             if(this.token==null){
                 alert("您没有权限,请重新登陆");
-                window.location.href = "http://www.wangniubi.cn/archives/error.html"
+                window.location.href = "http://192.168.1.131:8080/archives/index.html"
             }else{
                 
-                this.userType=this.token.userType;
+                //this.userType=this.token.userType;
             }
             
         },

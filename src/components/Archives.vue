@@ -26,14 +26,32 @@
                             <el-button type="primary" plain icon="el-icon-search" @click="selectClick" v-if="false">检索</el-button>
                             <el-button type="primary" plain icon="el-icon-upload2" @click="uploadClick" v-if="writeable==1">数据导入</el-button>
                             <el-button type="primary" plain icon="el-icon-download" @click="downloadClick">数据导出</el-button>
-                            <el-button type="primary" plain icon="el-icon-sort" @click="mountClick" v-if="writeable==1">挂接</el-button>
+                            <!-- <el-button type="primary" plain icon="el-icon-sort" @click="mountClick" v-if="writeable==1">挂接</el-button> -->
                             <el-button type="primary" plain icon="el-icon-delete" @click="deleteRowData" v-if="writeable==1">删除</el-button>
                             <el-button type="primary" plain icon="el-icon-search" @click="archives.conditionDialogVisiable = true">筛选</el-button>
                             <el-button type="primary" plain icon="el-icon-edit-outline" @click="archives.conditionUpdateDialogVisiable = true" v-if="writeable==1">批量修改</el-button>
                             <el-button type="primary" plain icon="el-icon-upload" @click="bigMount" v-if="writeable==1">批量挂接</el-button>
-                            <el-button type="primary" plain icon="el-icon-error" @click="removeFilePath" v-if="writeable==1">删除原文</el-button>
+                            <!-- <el-dropdown @command="handleCommand">
+                            <el-button type="primary" plain>
+                                一键生成<i class="el-icon-arrow-down"></i>
+                            </el-button>
+                            <el-dropdown-menu slot="dropdown" >
+                                <el-dropdown-item command='QZH'>一键生成全宗号</el-dropdown-item>
+                                <el-dropdown-item command='DH'>一键生成档号</el-dropdown-item>
+                            </el-dropdown-menu>
+                            </el-dropdown> -->
+                            <!-- <el-button type="primary" plain icon="el-icon-error" @click="removeFilePath" v-if="writeable==1">删除原文</el-button> -->
                             <el-button type="primary" plain icon="el-icon-refresh" @click="refresh">刷新</el-button>
-                            <el-button type="primary" plain icon="el-icon-view" :disabled='canShowPdf' @click="showPdf">原文显示</el-button>
+                            <!-- <el-button type="primary" plain icon="el-icon-view" :disabled='canShowPdf' @click="showPdf">原文显示</el-button> -->
+                            <el-select v-model="value2" placeholder="查看原文">
+                                <el-option
+                                v-for="item in options2"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled">
+                                </el-option>
+                            </el-select>
                         </el-button-group>
                     </div>
                     <v-table
@@ -71,12 +89,28 @@
                             <el-button type="primary" plain icon="el-icon-search" @click="selectClick" v-if="false">检索</el-button>
                             <el-button type="primary" plain icon="el-icon-upload2" @click="uploadClick" v-if="writeable==1">数据导入</el-button>
                             <el-button type="primary" plain icon="el-icon-download" @click="downloadClick">数据导出</el-button>
-                            <el-button type="primary" plain icon="el-icon-sort" @click="mountClick" v-if="writeable==1">挂接</el-button>
+                            <!-- <el-button type="primary" plain icon="el-icon-sort" @click="mountClick" v-if="writeable==1">挂接</el-button> -->
                             <el-button type="primary" plain icon="el-icon-delete" @click="deleteRowData" v-if="writeable==1">删除</el-button>
                             <el-button type="primary" plain icon="el-icon-search" @click="archives.conditionDialogVisiable = true">筛选</el-button>
                             <el-button type="primary" plain icon="el-icon-edit-outline" @click="archives.conditionUpdateDialogVisiable = true" v-if="writeable==1">批量修改</el-button>
                             <el-button type="primary" plain icon="el-icon-refresh" @click="refresh">刷新</el-button>
-                            <el-button type="primary" plain icon="el-icon-view" :disabled='canShowPdf' @click="showPdf">原文显示</el-button>
+                            <!-- <el-dropdown @command="handleCommand"  >
+                            <el-button type="primary" plain > 一键生成<i class="el-icon-arrow-down"></i></el-button>
+                            <el-dropdown-menu slot="dropdown" >
+                                <el-dropdown-item command='QZH'>一键生成全宗号</el-dropdown-item>
+                                <el-dropdown-item command='DH'>一键生成档号</el-dropdown-item>
+                            </el-dropdown-menu>
+                            </el-dropdown> -->
+                            <!-- <el-button type="primary" plain icon="el-icon-view" :disabled='canShowPdf' @click="showPdf">原文显示</el-button> -->
+                            <el-select v-model="value2" placeholder="查看原文">
+                                <el-option
+                                v-for="item in options2"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled">
+                                </el-option>
+                            </el-select>
                         </el-button-group>
 
                     </div>
@@ -151,7 +185,7 @@
         <el-dialog title="条目修改" 
             :visible.sync="archives.updateRowDialogVisiable" width="40%" :before-close="handleCloseUpdate" v-if='updateShow'>
             <div  class="input-group">
-                <div v-for="(column,index) in columnsAnJuan" :key="column.field" class="input-group-item" v-if="index>0&&column.titl!='文件数量'">
+                <div v-for="(column,index) in columnsAnJuan" :key="column.field" class="input-group-item" v-if="index>0&&column.title!='文件数量'">
                     <label :for="column.field">{{column.title}}</label> <input :value="archives.aj.selectedGroup[0][column.field]" type="text" :name="column.field" class="input-item-update" id=""/>
                 </div>
             </div>
@@ -191,20 +225,30 @@
             
             <span slot="footer" class="dialog-footer">
                 <el-button @click="unupload">取 消</el-button>
-                <el-button type="primary" @click="uploadData">修改</el-button>
+                <el-button type="primary" @click="uploadData">导入</el-button>
             </span>
         </el-dialog>
         <!-- 挂接 -->
-        <el-dialog title="挂接" :visible.sync="archives.aj.mountDataDialogVisiable"  width="40%">
+        <el-dialog title="电子文件挂接" :visible.sync="archives.aj.mountDataDialogVisiable" :before-close="mountHandleClose" width="40%">
             <div>
-                <div>
-                    <input type="file" @change="mountData" accept=".pdf" />
-                </div>
-                <div>
-                    
-                </div>
+                <el-upload
+                    class="upload-demo"
+                    action="/api/api/archives/data/fileUpload"
+                    :on-preview="handlePreview"
+                    :on-success="handleSuccess"
+                    :on-error="handleErr"
+                    :on-remove="handleRemove"
+                    :before-remove="beforeRemove"
+                    :data="mountData"
+                    :file-list="fileList"
+                    multiple
+                    :accept="fileTyepAccept"
+                    :on-exceed="handleExceed"
+                    >
+                    <el-button size="small" type="primary">点击上传</el-button>
+                    <div style="margin-top:10px" slot="tip" class="el-upload__tip">每张不超过2G，总共不超过10G</div>
+                </el-upload>
             </div>
-            
             <span slot="footer" class="dialog-footer">
                 <el-button @click="unmount">取 消</el-button>
                 
@@ -219,9 +263,7 @@
             <el-input v-model="childeProps.nodeName" placeholder="请输入节点名称"></el-input>
             <h3>节点类型</h3><br/>
                 <el-radio v-model="childeProps.nodeType" label="6">分类节点</el-radio>
-                <el-radio  v-model="childeProps.nodeType" label="5">档案库节点</el-radio>
-            
-            
+                <el-radio  v-model="childeProps.nodeType" label="5">档案库节点</el-radio>  
             <span slot="footer" class="dialog-footer">
                 <el-button @click="addTreeNodeDialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="addChildNode">确 定</el-button>
@@ -290,7 +332,7 @@
                         :column-width-drag="true"
                         :is-vertical-resize="true"
                         odd-bg-color="#FCFCFC"
-                        even-bg-color="	#FDF5E6"
+                        even-bg-color="#FDF5E6"
                         :is-horizontal-resize="true"
                         :title-row-height="30"
                         :row-height="20"
@@ -426,6 +468,89 @@
                 <el-button type="primary" @click="updateByCondition">修改选中行</el-button>
             </span>
         </el-dialog>
+        <el-dialog title="原文查看" :visible.sync="dialogTableVisible" :before-close="beforeDialogTableVisible">
+            <el-table 
+                :data="gridData"
+                height="250"
+                border
+                stripe
+                style="width: 100%">
+                <el-table-column property="fileName" label="文件名" width="500"></el-table-column>
+                <el-table-column property="filePath" label="路径" width="300" v-if="false"></el-table-column>
+                <el-table-column label="操作" >
+                    <template slot-scope="scope">
+                        <el-button
+                        @click.native.prevent="showData(scope.$index, gridData)"
+                        type="text"
+                        size="small">
+                        查看
+                        </el-button>
+                        <el-button
+                        @click.native.prevent="downloadData(scope.$index, gridData)"
+                        type="text"
+                        size="small">
+                        下载
+                        </el-button>
+                        <el-button
+                        @click.native.prevent="deleteData(scope.$index, gridData)"
+                        type="text"
+                        size="small"
+                        v-if="writeable==1">
+                        删除
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <span slot="footer" class="dialog-footer">
+                
+                <el-button  type="primary" @click="mountClick" v-if="writeable==1">挂接原文</el-button>
+                <el-button @click=" dialogTableVisibleClick">取 消</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog title="视频文件预览" :visible.sync="showVideo" :before-close="showVideoClose" align="center" >
+            <div>
+                
+                    <el-button style="float:left" icon="el-icon-arrow-left" @click='lastVid'>上一页</el-button>
+                    
+                    <el-button style="float:right" @click='nextVid'>下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                
+            </div>
+            <div>
+                <h4>{{videoName}}</h4>
+            </div>
+            <video height="400px" :src="videoSrc" controls style="margin:0px auto"></video>
+        </el-dialog>
+        <el-dialog title="音频文件预览" :visible.sync="showAudio" :before-close="showAudioClose" align="center">
+            <div>
+                
+                    <el-button style="float:left" icon="el-icon-arrow-left" @click='lastAudio'>上一页</el-button>
+                    
+                    <el-button style="float:right" @click='nextAudio'>下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                
+            </div>
+            <div>
+                <h4>{{audioName}}</h4>
+            </div>
+            <audio height="400px" :src="audioSrc" controls="controls"></audio>
+        </el-dialog>
+        <el-dialog title="图片文件预览" :visible.sync="showPicture" :before-close="showPictureClose" align="center" v-loading="picloading">
+            <div>
+                
+                    <el-button style="float:left" icon="el-icon-arrow-left" @click='lastPic'>上一页</el-button>
+                    
+                    <el-button style="float:right" @click='nextPic'>下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                
+            </div>
+            <div>
+                <h4>{{picName}}</h4>
+            </div>
+            
+            <div style="margin-top:15px">
+                <img width="400px"  :src="pictureSrc" controls style="margin:0px auto" @load='onloadeddata' >
+            </div>
+            
+            
+        </el-dialog>
     </div>
                 
 </template>
@@ -440,6 +565,51 @@ export default {
     name:"Archives",
     data () {
         return {
+            brotherNodeId:'',
+            fileList:[],
+            gridData: [],
+            videoSrc:'',
+            videoName:'',
+
+            audioSrc:'',
+            audioName:'',
+
+            pictureSrc:'',
+            picIndex:'',
+            picName:'',
+            fileTyepAccept:"",
+            dialogTableVisible:false,
+            showVideo:false,
+            showAudio:false,
+            showPicture:false,
+            options2: [{
+            value: 1,
+            label: '图片',
+            disabled: true
+            },{
+            value: 2,
+            label: '音频',
+            disabled: true
+            }, {
+            value: 3,
+            label: '视频',
+            disabled: true
+            }, {
+            value: 4,
+            label: '文档',
+            disabled: true
+            },{
+            value: 5,
+            label: '其他',
+            disabled: true
+            },
+            ],
+            mountData:{
+                tableId:'',
+                rowId:'',
+                fileType: '',
+            },
+            value2:'',
             writeable:1,
             pdfDefine:{
                 filePath:''
@@ -493,6 +663,10 @@ export default {
                 currentTempletNode:{
 
                 },
+                yijianshengcheng:{
+                    DH:'',
+                    QZH:'',
+                }
             },
             znodeData: [
 
@@ -531,18 +705,36 @@ export default {
                         this.canShowPdf=true;
                         this.showMenuOne=false;
                         this.showMenuTwo=false;
-                        console.log(treeNode);
+                        for(var a=0;a<5;a++){
+                            this.options2[a].disabled=true;
+                        }
+                        this.value2='';
+                        
+                        this.mountData.tableId=treeNode.id;
+                        var rootid=treeNode.rootId;
+                        console.log('treeNode',treeNode);
+                        
+                        
                         if((treeNode.writeable==undefined)||(treeNode.writeable==0)){
                             this.writeable=0;
                         }
                         if(treeNode.tableName != undefined){
                             var parentNode=treeNode.getParentNode();
+                            
                             var filter=parentNode.children.filter(
                                 (item,index)=>{
                                     return item.tableName.indexOf('文件级')!=-1;
                                 }
                             )
                             if(treeNode.tableName.indexOf('案卷级')!=-1){
+                                
+                                for(var i=0;i<treeNode.getParentNode().children.length;i++){
+                                    if(treeNode.getParentNode().children[i].nodeName.indexOf('文件级'!=-1)){
+                                        this.brotherNodeId=treeNode.getParentNode().children[i].id
+                                        this.mountData.tableId=this.brotherNodeId
+                                    }
+                                }
+                                
                                 
                                 this.$axios.all(
                                     [
@@ -674,7 +866,7 @@ export default {
                                         }
                                     )              
                             }else if(treeNode.tableName.indexOf('文件级')!=-1){
-                                
+                                this.brotherNodeId='';
                                 this.$axios.post(
                                     '/api/api/archives/column/select',
                                     {
@@ -755,7 +947,7 @@ export default {
                                     }
                                 )
                             }else if(treeNode.tableName.indexOf('件盒级')!=-1){
-                                
+                                this.brotherNodeId='';
                                 this.$axios.post(
                                     '/api/api/archives/column/select',
                                     {
@@ -780,7 +972,11 @@ export default {
                                                         item.titleAlign='center';
                                                         item.columnAlign='center';
                                                         item.isResize=true;
-                                                        
+                                                        if(item.sortType == 1){
+                                                            item.orderBy="asc"
+                                                        }else if(item.sortType == -1){
+                                                            item.orderBy ="desc"
+                                                        }
                                                         return item
                                                     }
                                                 );
@@ -897,6 +1093,7 @@ export default {
 
             ],
             loading:false,
+            picloading:false,
             tableDataUpload:[
 
             ],
@@ -942,7 +1139,7 @@ export default {
     },
 
     mounted () {
-        var writeableList=JSON.parse(window.sessionStorage.getItem('writeable'))
+        //var writeableList=JSON.parse(window.sessionStorage.getItem('writeable'))
         this.$axios.post(
             '/api/api/archives/repertory/selectAll',
             {
@@ -955,13 +1152,12 @@ export default {
                 
                 for(var j=0;j<res.data.nodes.length;j++){
                     res.data.nodes[j].writeable=1;
-                    for(var k=0;k<writeableList.length;k++){
-                        if(writeableList[k].templetTreeId==res.data.nodes[j].id){
-                            res.data.nodes[j].writeable=writeableList[k].writeable
-                        }
-                    }
-                    //res.data.nodes[0].writeable=true;
-                    //res.data.nodes[6].writeable=true;
+                    // for(var k=0;k<writeableList.length;k++){
+                    //     if(writeableList[k].templetTreeId==res.data.nodes[j].id){
+                    //         res.data.nodes[j].writeable=writeableList[k].writeable
+                    //     }
+                    // }
+                    
                     switch(res.data.nodes[j].nodeType){
                         case 0:res.data.nodes[j].icon = './static/icon/quanzong.png';break;
                         case 1:res.data.nodes[j].icon = './static/icon/fenlei.png';break;
@@ -975,11 +1171,11 @@ export default {
                 }        
                 // this.znodeData=res.data.nodes;
                 for(var i=0;i<res.data.tables.length;i++){      
-                     for(var l=0;l<writeableList.length;l++){
-                        if(writeableList[l].templetTreeId==res.data.tables[i].id){
-                            res.data.tables[i].writeable=writeableList[l].writeable
-                        }
-                    }             
+                    //  for(var l=0;l<writeableList.length;l++){
+                    //     if(writeableList[l].templetTreeId==res.data.tables[i].id){
+                    //         res.data.tables[i].writeable=writeableList[l].writeable
+                    //     }
+                    // }             
                     res.data.tables[i].nodeName=res.data.tables[i].tableName;
                     res.data.tables[i].parentNodeId=res.data.tables[i].parentId;
                     res.data.tables[i].icon="./static/icon/table.png";
@@ -1021,7 +1217,95 @@ export default {
         },
         "archives.aj.selectedGroup":function(newselectedGroup,oldselectedGroup){
             this.footerStatus.Wj.selectCount=newselectedGroup.length;
-        }
+        },
+        "value2":function(newVal,oidVal){
+            this.mountData.fileType=newVal;
+            switch (newVal) {
+                case 1:
+                    this.fileTyepAccept='image/*';
+                    break;
+                case 2:
+                    this.fileTyepAccept='audio/*';
+                    break;
+                case 3:
+                    this.fileTyepAccept='video/*';
+                    break;
+                case 4:
+                    this.fileTyepAccept='application/pdf';
+                    break;
+                case 5:
+                    this.fileTyepAccept='*';
+                    break;
+                default:
+                    break;
+            }
+            
+            if((newVal!="")&&(this.brotherNodeId=='')){
+                console.log("++++++++++++++++++++++++++++")
+                console.log(this.mountData.tableId)
+                console.log(this.mountData.rowId)
+                console.log(newVal)   
+                this.$axios.post(
+                    '/api/api/archives/data/getFileList',
+                    {
+                        tableId:this.mountData.tableId,
+                        rowId:this.mountData.rowId,
+                        
+                        fileType:newVal,
+                    }
+                ).then(
+                    (res)=>{
+                        console.log(res)
+                        if('errorMsg' in res.data==false){
+                            this.dialogTableVisible=true;
+                            this.gridData=res.data.fileList;
+                        }else{
+                            this.operation('error',res.data.errorMsg)
+                        }
+                        
+                    }
+                ).catch(
+                    (err)=>{
+                        console.log(err)
+                    }
+
+                )
+                
+            }else if((newVal!="")&&(this.brotherNodeId!='')){
+                this.$axios.post(
+                    '/api/api/archives/data/getFileList',
+                    {
+                        tableId:this.brotherNodeId,
+                        rowId:this.mountData.rowId,
+                        
+                        fileType:newVal,
+                    }
+                ).then(
+                    (res)=>{
+                        console.log(res)
+                        if('errorMsg' in res.data==false){
+                            this.dialogTableVisible=true;
+                            this.gridData=res.data.fileList;
+                        }else{
+                            this.operation('error',res.data.errorMsg)
+                        }
+                        
+                    }
+                ).catch(
+                    (err)=>{
+                        console.log(err)
+                    }
+
+                )
+            }else{
+                this.dialogTableVisible=false;
+            }
+        },
+        // "dialogTableVisible":function(newFile,oidFile){
+        //     if(newFile==false){
+        //         this.refresh()
+        //     }
+        // }
 
     },
     methods: {
@@ -1184,6 +1468,25 @@ export default {
             done();
             
         },
+        showVideoClose(done){
+            this.showVideo=false;
+            this.videoSrc='';
+            done();
+        },
+        showAudioClose(done){
+            this.showAudio=false;
+            this.audioSrc='';
+            done();
+        },
+        showPictureClose(done){
+            this.showPicture=false;
+            this.pictureSrc='';
+            done();
+        },
+        mountHandleClose(done){
+            this.value2='';
+            done();
+        },
         handleCloseUpdate(done){            
                 this.archives.aj.updateRowDialogVisiable = false;
                 this.updateShow=false;
@@ -1198,6 +1501,10 @@ export default {
 
             done();
         },
+        // handleFileClose(done){
+        //     this.refresh();
+        //     done();
+        // },
         //添加子节点
         addChildNode(){
             if((this.childeProps.nodeName=='')||(this.childeProps.nodeType=='')){
@@ -1268,21 +1575,35 @@ export default {
         
         
         rowWjClick(rowIndex, rowData, column){
+            this.value2='';
             console.log('1',rowData)
             console.log('2',rowIndex) 
             console.log('3',column)
+            this.mountData.rowId=rowData.id;
             this.rowWjClickData.rowIndex=rowIndex;
             this.rowWjClickData.rowData=rowData;
+            for(var a=0;a<5;a++){
+                this.options2[a].disabled=false;
+            }
             if(rowData.fileCount!=0){
                 console.log('2',111)
                 this.canShowPdf=false;
+                
+                //alert(this.value2) 
                 this.pdfDefine.filePath=rowData.filePath;
             }else{
                 this.canShowPdf=true;
                 this.pdfDefine.filePath='';
+                
+                this.value2='';
             }
         },
         rowClick(rowIndex, rowData, column){
+            this.value2='';
+            for(var a=0;a<5;a++){
+                this.options2[a].disabled=true;
+            }
+            this.value2='';
             var tree = $.fn.zTree.getZTreeObj("templeteTree");
             var selectedNode = tree.getSelectedNodes()[0];
             this.rowClickData.rowIndex=rowIndex;
@@ -1631,6 +1952,19 @@ export default {
             
         },
         downloadClick(){
+            // console.log(this.tableDataOne)
+            // //console.log(this.archives.aj.selectedGroup)
+            // this.tablesToExcel(this.tableDataOne,1,1);
+            //this.tablesToExcel(this.archives.aj.selectedGroup,"2","2");
+            var blob = new Blob([res.data])
+            var downloadElement = document.createElement('a');
+            var href = window.URL.createObjectURL(blob); //创建下载的链接
+            downloadElement.href = href;
+            downloadElement.download = selectedNode.tableName+'.xlsx'; //下载后文件名
+            document.body.appendChild(downloadElement);
+            downloadElement.click(); //点击下载
+            document.body.removeChild(downloadElement); //下载完成移除元素
+            window.URL.revokeObjectURL(href); //释放掉blob对象  
             var formData = new FormData();
             
             var tree = $.fn.zTree.getZTreeObj("templeteTree");
@@ -1667,87 +2001,206 @@ export default {
             )
             
         },
+        // 把页面的表格转化为excel下载下来
+        tablesToExcel(table, name, filename) {
+
+            var uri = "data:application/vnd.ms-excel;base64,"
+                ,
+                template = "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>"
+                , templateend = "</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>"
+                , body = "<body>"
+                , tablevar = "<table>{table"
+                , tablevarend = "}</table>"
+                , bodyend = "</body></html>"
+                , worksheet = "<x:ExcelWorksheet><x:Name>"
+                , worksheetend = "</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>"
+                , worksheetvar = "{worksheet"
+                , worksheetvarend = "}"
+                , base64 = function (s) {
+                    return window.btoa(unescape(encodeURIComponent(s)));
+                }
+                , format = function (s, c) {
+                    return s.replace(/{(\w+)}/g, function (m, p) {
+                        return c[p];
+                    });
+                }
+                , wstemplate = ""
+                , tabletemplate = "";
+
+            var tables = table;
+
+            for (var i = 0; i < tables.length; ++i) {
+                wstemplate += worksheet + worksheetvar + i + worksheetvarend + worksheetend;
+                /*
+                *  addd <td></td> let two table arrange left and right
+                */
+                if (tables.length > 1) {
+                    tabletemplate += "<td>" + tablevar + i + tablevarend + "</td>";
+                } else {
+                    tabletemplate += tablevar + i + tablevarend;
+                }
+            }
+
+            /*
+            * add <table><tr> and </table></tr> to Conbime left_tab and right_tab to one table
+            */
+            if (tables.length > 1) {
+                tabletemplate = "<table><tr>" + tabletemplate + "</table></tr>";
+            }
+
+            var allTemplate = template + wstemplate + templateend;
+            var allWorksheet = body + tabletemplate + bodyend;
+            var allOfIt = allTemplate + allWorksheet;
+
+            var ctx = {};
+            for (var j = 0; j < tables.length; ++j) {
+                ctx["worksheet" + j] = name[j];
+            }
+
+            for (var k = 0; k < tables.length; ++k) {
+                var exceltable;
+                if (!tables[k].nodeType) exceltable = document.getElementById(tables[k]);
+                ctx["table" + k] = exceltable.innerHTML;
+            }
+
+            window.location.href = uri + base64(format(allOfIt, ctx));
+        },
+        downloadFile(fileName,filePath){
+            var formData = new FormData();
+            formData.append('filePath',filePath)
+            this.$axios.post(
+                '/api/api/archives/data/fileDownload',
+                formData,
+                {     
+                    responseType:'blob',
+                    headers:{
+                        'Content-Type': 'multipart/form-data'
+                    }
+                },
+                
+                
+            ).then(
+                (res)=>{
+                    console.log(res)
+                    var blob = new Blob([res.data])
+                    var downloadElement = document.createElement('a');
+                    var href = window.URL.createObjectURL(blob); //创建下载的链接
+                    downloadElement.href = href;
+                    downloadElement.download = fileName; //下载后文件名
+                    document.body.appendChild(downloadElement);
+                    downloadElement.click(); //点击下载
+                    document.body.removeChild(downloadElement); //下载完成移除元素
+                    window.URL.revokeObjectURL(href); //释放掉blob对象                 
+                } 
+            ).catch(
+                (err)=>{
+                    console.log(err)
+                } 
+            )
+            
+        },
+
         mountClick(){
-            if(this.archives.aj.selectedGroup.length==0){
-                this.operation('error','请选择一行数据')
-            }else if(this.archives.aj.selectedGroup.length>1){
-                this.operation('error','请选择一行数据')
-            }else{
+            // if(this.archives.aj.selectedGroup.length==0){
+            //     this.operation('error','请选择一行数据')
+            // }else if(this.archives.aj.selectedGroup.length>1){
+            //     this.operation('error','请选择一行数据')
+            // }else{
                 this.archives.aj.mountDataDialogVisiable=true;
-            }         
+            // }         
 
 
         },
         unmount(){
             this.archives.aj.mountDataDialogVisiable=false;
+            this.value2='';
         },
-        mountData(event){
-            var formData = new FormData();
-            var tree = $.fn.zTree.getZTreeObj("templeteTree");
-            var selectedNode = tree.getSelectedNodes()[0];
-            var files = event.target.files;
+        // mountData(event){
             
-            console.log('id',selectedNode.id)
-            console.log('files',files);
-            console.log('id',this.archives.aj.selectedGroup[0].id)
-            // files.forEach(file => {
-            //     formData.append('files',file)
-            // });
-            formData.append('tableId',selectedNode.id);
-            formData.append('rowId',this.archives.aj.selectedGroup[0].id)
+        //     var formData = new FormData();
+        //     var tree = $.fn.zTree.getZTreeObj("templeteTree");
+        //     var selectedNode = tree.getSelectedNodes()[0];
+        //     var files = event.target.files;
             
-            formData.append('files',files[0]);
+        //     console.log('id',selectedNode.id)
+        //     console.log('files',files);
+        //     console.log('id',this.archives.aj.selectedGroup[0].id)
+        //     // files.forEach(file => {
+        //     //     formData.append('files',file)
+        //     // });
+        //     formData.append('tableId',selectedNode.id);
+        //     formData.append('rowId',this.archives.aj.selectedGroup[0].id)
+        //     formData.append('fileType',this.value3)
+        //     formData.append('files',files[0]);
             
-                this.$axios.post(
-                '/api/api/archives/data/fileUpload',
-                formData,
-                {     
-                    headers:{
-                        'Content-Type': 'multipart/form-data'
-                    }
-                },      
-            ).then(
-                (res)=>{
-                    console.log(res)
-                    if(res.data.success==1){
-                        this.operation('success','挂接成功')
-                        console.log(this.tableDataOne)
-                        for(var i=0;i<this.tableDataOne.length;i++){
-                            if(this.tableDataOne[i].id==this.archives.aj.selectedGroup[0].id){
-                                this.tableDataOne[i]['fileCount']=res.data.fileCount;
-                                this.tableDataOne[i]['filePath']=res.data.filePath;
-                            }
-                        }
-                        this.archives.aj.selectedGroup=[];
-                    }else{
+        //         this.$axios.post(
+        //         '/api/api/archives/data/fileUpload',
+        //         formData,
+        //         {     
+        //             headers:{
+        //                 'Content-Type': 'multipart/form-data'
+        //             }
+        //         },      
+        //     ).then(
+        //         (res)=>{
+        //             console.log(res)
+        //             if(res.data.success==1){
+        //                 this.operation('success','挂接成功')
+        //                 console.log(this.tableDataOne)
+        //                 for(var i=0;i<this.tableDataOne.length;i++){
+        //                     if(this.tableDataOne[i].id==this.archives.aj.selectedGroup[0].id){
+        //                         this.tableDataOne[i]['fileCount']=res.data.fileCount;
+        //                         this.tableDataOne[i]['filePath']=res.data.filePath;
+        //                     }
+        //                 }
+        //                 this.archives.aj.selectedGroup=[];
+        //             }else{
 
-                        this.operation('error','挂接失败,'+res.data.errorMsg)
-                    }
-                    this.archives.aj.mountDataDialogVisiable=false;
-                }
-            ).catch(
-                (err)=>{
-                    console.log(err)
-                }
-            )      
-        },
-        showPdf(){
+        //                 this.operation('error','挂接失败,'+res.data.errorMsg)
+        //             }
+        //             this.archives.aj.mountDataDialogVisiable=false;
+        //             this.value3='';
+        //         }
+        //     ).catch(
+        //         (err)=>{
+        //             console.log(err)
+        //         }
+        //     )      
+            
+            
+        // },
+        
+        showPdf(filePath){
         //创建form表单
             var temp_form = document.createElement("form");
-            temp_form.action = "http://111.231.247.67:8088/api/archives/data/showFile";
+            temp_form.action = "/api/api/archives/data/showPdf";
             //如需打开新窗口，form的target属性要设置为'_blank'
             temp_form.target = "_blank";
             temp_form.method = "post";
             temp_form.style.display = "none";
             var opt = document.createElement("textarea");
             opt.name = "filePath";
-            opt.value = this.pdfDefine.filePath;
+            opt.value = filePath
             temp_form.appendChild(opt);
             document.body.appendChild(temp_form);
             //提交数据
             temp_form.submit();
-            
-            //indow.open("http://192.168.1.102:8088/api/archives/data/showFile?filePath="+this.pdfDefine.filePath, "_blank");
+        },
+        showOther(filePath){
+        //创建form表单
+            var temp_form = document.createElement("form");
+            temp_form.action = "/api/api/archives/data/showPdf";
+            //如需打开新窗口，form的target属性要设置为'_blank'
+            temp_form.target = "_blank";
+            temp_form.method = "post";
+            temp_form.style.display = "none";
+            var opt = document.createElement("textarea");
+            opt.name = "filePath";
+            opt.value = filePath
+            temp_form.appendChild(opt);
+            document.body.appendChild(temp_form);
+            //提交数据
+            temp_form.submit();
         },
         handleRemove(file, fileList) {
         console.log(file, fileList);
@@ -1960,11 +2413,244 @@ export default {
                 
             })
         },
+        showData(index,val){
+            this.picIndex=index;
+            for(var i=0;i<this.gridData.length;i++){
+                if(i==index){
+                    switch (this.mountData.fileType) {
+                        case 1:
+                            this.picloading=true;
+                            this.picName=this.gridData[i].fileName
+                            this.showPicture=true
+                            this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.gridData[i].filePath)
+                            break;
+                        case 2:
+                            this.audioName=this.gridData[i].fileName
+                            this.showAudio=true
+                            this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.gridData[i].filePath)
+                            break;
+                        case 3:
+                            this.videoName=this.gridData[i].fileName
+                            this.showVideo=true
+                            this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.gridData[i].filePath)
+                            break;
+                        case 4:
+                            this.showPdf(this.gridData[i].filePath)
+                            break;
+                        case 5:
+                            this.downloadFile(this.gridData[i].fileName,this.gridData[i].filePath)
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                }
+            }
+        },
+        downloadData(index,val){
+            for(var i=0;i<this.gridData.length;i++){
+                if(i==index){
+                    this.downloadFile(this.gridData[i].fileName,this.gridData[i].filePath)
+                    
+                }
+            }
+
+        },
+        deleteData(index,val){
+            for(var i=0;i<this.gridData.length;i++){
+                if(i==index){
+                    this.$axios.post(
+                        '/api/api/archives/data/removeFile',
+                        {
+                            tableId:this.mountData.tableId,
+                            rowId:this.mountData.rowId,
+                            filePath:this.gridData[i].filePath
+                        }
+                    ).then(
+                        (res)=>{
+                            console.log(res)
+                            if(res.data.success==1){
+                                this.operation('success','成功移除1条')
+                                val.splice(index, 1);
+                            }else if(res.data.errorMsg!=undefined){
+                                this.operation('error',res.data.errorMsg)
+                            }else{
+                                this.operation('error','删除失败')
+                            }
+                            
+                            //this.refresh();
+                        }
+                    ).catch(
+                        (err)=>{
+                            console.log(err)
+                        }
+                    )
+                }
+            }
+            
+            
+        },
+        handleSuccess(response, file, fileList){
+            console.log("-------------",response)
+            console.log(file)
+            console.log(fileList)
+            this.fileList=[];
+            this.operation("success","上传成功")
+            this.archives.aj.mountDataDialogVisiable=false
+
+            this.refresh();
+        },
+        handleErr(err, file, fileList){
+            console.log("++++++++++++",err)
+            console.log(file)
+            console.log(fileList)
+            this.fileList=[];
+            this.operation("error","上传失败")
+            this.refresh();
+            this.archives.aj.mountDataDialogVisiable=false
+        },
         //模块刷新
         refresh(){
             let selectedNode = $.fn.zTree.getZTreeObj("templeteTree").getSelectedNodes()[0];
             $("#"+selectedNode.tId+"_a").click(); // 点击节点
+        },
+        handleCommand(command){
+            console.log(command)
+        },
+        dialogTableVisibleClick(){
+            this.dialogTableVisible=false;
+            this.value2='';
+        },
+        beforeDialogTableVisible(done){
+            this.dialogTableVisible=false;
+            this.value2='';
+            done();
+        },
+        lastPic(){
+            this.picloading=true;
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+    
+            if(this.picIndex!=0){
+                this.showPicture=true
+                this.picName=this.gridData[this.picIndex-1].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.gridData[this.picIndex-1].filePath)
+                this.picIndex-=1;
+                //this.picloading=false
+            }else if(this.picIndex==0){
+                this.showPicture=true
+                this.picName=this.gridData[this.gridData.length-1].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.gridData[this.gridData.length-1].filePath)
+                this.picIndex=this.gridData.length-1;
+                //this.picloading=false
+            }
+            
+            
+        },
+        nextPic(){
+            this.picloading=true;
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+            
+            if(this.picIndex!=this.gridData.length-1){
+                this.showPicture=true
+                this.picName=this.gridData[this.picIndex+1].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.gridData[this.picIndex+1].filePath)
+                this.picIndex+=1;
+                //this.picloading=false;
+            }else if(this.picIndex==this.gridData.length-1){
+                this.showPicture=true
+                this.picName=this.gridData[0].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.gridData[0].filePath)
+                this.picIndex=0;
+                //this.picloading=false
+            }
+            
+
+        },
+        lastVid(){
+            
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+    
+            if(this.picIndex!=0){
+                this.showVideo=true
+                this.videoName=this.gridData[this.picIndex-1].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.gridData[this.picIndex-1].filePath)
+                this.picIndex-=1;
+                //this.picloading=false
+            }else if(this.picIndex==0){
+                this.showVideo=true
+                this.videoName=this.gridData[this.gridData.length-1].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.gridData[this.gridData.length-1].filePath)
+                this.picIndex=this.gridData.length-1;
+                //this.picloading=false
+            }
+            
+            
+        },
+        nextVid(){
+           
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+            
+            if(this.picIndex!=this.gridData.length-1){
+                this.showVideo=true
+                this.videoName=this.gridData[this.picIndex+1].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.gridData[this.picIndex+1].filePath)
+                this.picIndex+=1;
+                //this.picloading=false;
+            }else if(this.picIndex==this.gridData.length-1){
+                this.showVideo=true
+                this.videoName=this.gridData[0].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.gridData[0].filePath)
+                this.picIndex=0;
+                //this.picloading=false
+            }
+            
+
+        },
+        lastAudio(){
+            
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+    
+            if(this.picIndex!=0){
+                this.showAudio=true
+                this.audioName=this.gridData[this.picIndex-1].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.gridData[this.picIndex-1].filePath)
+                this.picIndex-=1;
+                //this.picloading=false
+            }else if(this.picIndex==0){
+                this.showAudio=true
+                this.audioName=this.gridData[this.gridData.length-1].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.gridData[this.gridData.length-1].filePath)
+                this.picIndex=this.gridData.length-1;
+                //this.picloading=false
+            }
+            
+            
+        },
+        nextAudio(){
+            
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+            
+            if(this.picIndex!=this.gridData.length-1){
+                this.showAudio=true
+                this.audioName=this.gridData[this.picIndex+1].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.gridData[this.picIndex+1].filePath)
+                this.picIndex+=1;
+                //this.picloading=false;
+            }else if(this.picIndex==this.gridData.length-1){
+                this.showAudio=true
+                this.audioName=this.gridData[0].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.gridData[0].filePath)
+                this.picIndex=0;
+                //this.picloading=false
+            }
+            
+
+        },
+        onloadeddata(){
+            console.log('00000000000000000000000000000')
+            this.picloading=false
         }
+        
     }
 }
 </script>

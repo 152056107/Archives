@@ -33,6 +33,7 @@
                         <el-button type="primary" icon="el-icon-plus" @click="structDefine.addColumnDialogVisible = true" >增加字段</el-button>
                         <el-button type="primary" icon="el-icon-edit" @click="structDefine.updateColumnDialogVisible = true">修改字段</el-button>
                         <el-button type="primary" icon="el-icon-delete" @click="deleteColumn">删除字段</el-button>
+                        <el-button type="primary" icon="el-icon-delete" @click="creatDh">档号生成规则</el-button>
                     </el-button-group>
                     <v-table
                         style="width:100%;margin-top:5px"
@@ -50,6 +51,7 @@
                         :columns="structDefine.columns"
                         :table-data="structDefine.tableData"
                         :selectChange="selectChange"
+                        :select-all="selectAll"
                         :row-click="rowClick"
                     ></v-table>
                     <!-- <div style="height:50px"></div> -->
@@ -96,8 +98,8 @@
                             
                         </div>
                         <div class='mountData'>
-                            <h3>挂接规则:</h3>
-                            <span style="margin-top:15px">{{this.mountDefine.mountData+'\.'+'pdf'}}</span>
+                            <h3>挂接规则(存放的文件夹路径):</h3>
+                            <span style="margin-top:15px">{{this.mountDefine.mountData}}</span>
                             
                         </div>
                         
@@ -465,7 +467,8 @@ export default{
         
     },
     mounted(){
-        var writeableList=JSON.parse(window.sessionStorage.getItem('writeable'))
+        //var writeableList=JSON.parse(window.sessionStorage.getItem('writeable'))
+        
         this.znodeData=[];
         var self=this;
         this.$axios.get(
@@ -480,11 +483,11 @@ export default{
                     res.data.templetNodes[i].parentNodeId=res.data.templetNodes[i].parentId;
                     res.data.templetNodes[i].icon = './static/icon/moban.png';
                     res.data.templetNodes[i].writeable=1;
-                    for(var k=0;k<writeableList.length;k++){
-                        if(writeableList[k].templetTreeId==res.data.templetNodes[i].id){
-                            res.data.templetNodes[i].writeable=writeableList[k].writeable
-                        }
-                    }
+                    // for(var k=0;k<writeableList.length;k++){
+                    //     if(writeableList[k].templetTreeId==res.data.templetNodes[i].id){
+                    //         res.data.templetNodes[i].writeable=writeableList[k].writeable
+                    //     }
+                    // }
                         
                     
 
@@ -492,11 +495,11 @@ export default{
                 
                 for(var j=0;j<res.data.nodes.length;j++){
                     res.data.nodes[j].writeable=1;
-                    for(var l=0;l<writeableList.length;l++){
-                        if(writeableList[l].templetTreeId==res.data.nodes[j].id){
-                            res.data.nodes[j].writeable=writeableList[l].writeable
-                        }
-                    }
+                    // for(var l=0;l<writeableList.length;l++){
+                    //     if(writeableList[l].templetTreeId==res.data.nodes[j].id){
+                    //         res.data.nodes[j].writeable=writeableList[l].writeable
+                    //     }
+                    // }
                     //res.data.nodes[0].writeable=1;
                     //res.data.nodes[6].writeable=true;
                     
@@ -870,6 +873,9 @@ export default{
             console.log('select-change',selection,rowData);
             this.structDefine.selectGroup = selection;
         },
+        selectAll(selection){
+            this.structDefine.selectGroup = selection;
+        },
         rowClick(rowIndex,rowData,column){
             //console.log(column._checked);
 
@@ -980,40 +986,54 @@ export default{
             return makePy(hanzi)[0];
         },
         addColumn(){
-                //异步提交column数据
-            this.$axios.post(
-                '/api/api/archives/column/add',
-                {
-                    
-                    columnName:this.structDefine.columnPros.columnName,
-                    abcName:this.structDefine.columnPros.abcName,
-                    columnType:this.structDefine.columnPros.columnType,
-                    columnLength:this.structDefine.columnPros.columnLength,
-                    sortType:this.structDefine.columnPros.sortType,
-                    templetId:this.structDefine.currentTempletNode.id,
-                    sortLevel:this.structDefine.columnPros.sortLevel
-                }
-            ).then(
-                (res)=>{
-                    console.log(res);
-                    
-                    if(res.data.newColumn.sortType == 0){
-                        res.data.newColumn.sortInfo="不参与排序"
-                    }else if(res.data.newColumn.sortType == 1){
-                        res.data.newColumn.sortInfo="升序"
-                    }else if(res.data.newColumn.sortType == -1){
-                        res.data.newColumn.sortInfo="降序"
+            //异步提交column数据
+            var j=0;
+            for(var i=0;i<this.structDefine.tableData.length;i++){
+                if((this.structDefine.columnPros.columnName==this.structDefine.tableData[i].columnName)||(this.structDefine.columnPros.abcName==this.structDefine.tableData[i].abcName)){
+                    this.operation('error','字段名称或字段代码重复，请重新输入')
+                }else{
+                    j+=1;
+                    if(j==this.structDefine.tableData.length){
+                        this.$axios.post(
+                            '/api/api/archives/column/add',
+                            {
+                                
+                                columnName:this.structDefine.columnPros.columnName,
+                                abcName:this.structDefine.columnPros.abcName,
+                                columnType:this.structDefine.columnPros.columnType,
+                                columnLength:this.structDefine.columnPros.columnLength,
+                                sortType:this.structDefine.columnPros.sortType,
+                                templetId:this.structDefine.currentTempletNode.id,
+                                sortLevel:this.structDefine.columnPros.sortLevel
+                            }
+                        ).then(
+                            (res)=>{
+                                console.log(res);
+                                
+                                if(res.data.newColumn.sortType == 0){
+                                    res.data.newColumn.sortInfo="不参与排序"
+                                }else if(res.data.newColumn.sortType == 1){
+                                    res.data.newColumn.sortInfo="升序"
+                                }else if(res.data.newColumn.sortType == -1){
+                                    res.data.newColumn.sortInfo="降序"
+                                }
+                                this.structDefine.tableData.push(
+                                    res.data.newColumn
+                                );
+                                this.operation('success','添加成功');
+                                
+                            }
+                        ).catch(
+                            (err)=>{
+                                console.log(err);
+                            }
+                        )
                     }
-                    this.structDefine.tableData.push(
-                        res.data.newColumn
-                    );
-                    this.operation('success','添加成功');
+                    
                 }
-            ).catch(
-                (err)=>{
-                    console.log(err);
-                }
-            ) 
+            }
+            
+             
         },
         showUpdateColumnDialog(){
 
@@ -1077,37 +1097,47 @@ export default{
             }else{
                 var tree = $.fn.zTree.getZTreeObj("templeteTree");
                 var selectedNode = tree.getSelectedNodes()[0];
+                var j=this.structDefine.selectGroup.length;
                 for(var i=0;i<this.structDefine.selectGroup.length;i++){
-                    this.$axios.post(
-                        '/api/api/archives/column/delete',
-                        {
-                            id:this.structDefine.selectGroup[i].id
-                        }
-                    ).then(
-                        (res)=>{
-                            console.log(res)
-                            this.$axios.post(
-                            '/api/api/archives/column/select',
+                    if((this.structDefine.selectGroup[i].columnName=="档号")||(this.structDefine.selectGroup[i].columnName=="全宗号")){
+                        this.operation('warning','请不要删除全宗号或者档号')
+                        j-=1;
+                    }else{
+                        this.$axios.post(
+                            '/api/api/archives/column/delete',
                             {
-                                templetId:selectedNode.id
+                                id:this.structDefine.selectGroup[i].id
                             }
-                        ).then((res1)=>{
-                            console.log(res1);     
-                            this.operation('success','成功删除'+i+'条');   
-                            this.structDefine.tableData=res1.data.columns;
-                            this.structDefine.selectGroup=[];
-                            
-                        }).catch((err)=>{
+                        ).then(
+                            (res)=>{
+                                console.log(res)
+                                this.$axios.post(
+                                '/api/api/archives/column/select',
+                                {
+                                    templetId:selectedNode.id
+                                }
+                            ).then((res1)=>{
+                                console.log(res1);     
+                                this.operation('success','成功删除'+j+'条');   
+                                this.structDefine.tableData=res1.data.columns;
+                                this.structDefine.selectGroup=[];
+                                
+                            }).catch((err)=>{
 
-                        })
-                        }
-                    ).catch(
-                        (err)=>{
-                            console.log(err)
-                        }
-                    )
+                            })
+                            }
+                        ).catch(
+                            (err)=>{
+                                console.log(err)
+                            }
+                        )
+                    }
+                    
                 }
             }          
+        },
+        creatDh(){
+
         },
         backDeskClick(){
             this.$router.push({path:"/"});

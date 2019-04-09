@@ -80,8 +80,17 @@
             </div>
             
             <span slot="footer" class="dialog-footer">
-                <label>点击已挂接原文（文件数量为1）的条目，即可使用原文查看</label>
-                <el-button type="primary" :disabled="canShowData" @click="showData">原文查看</el-button>
+                <!-- <label>点击已挂接原文（文件数量为1）的条目，即可使用原文查看</label> -->
+                <el-select v-model="value2" placeholder="查看原文">
+                    <el-option
+                    v-for="item in options2"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                    :disabled="item.disabled">
+                    </el-option>
+                </el-select>
+                <!-- <el-button type="primary" :disabled="canShowData" @click="showData">原文查看</el-button> -->
                 <el-button @click="bigData.dataListShow=false">取 消</el-button>
             </span>
         </el-dialog>
@@ -131,10 +140,89 @@
             </div>
             
             <span slot="footer" class="dialog-footer">
-                <label>点击已挂接原文（文件数量为1）的条目，即可使用原文查看</label>
+                <el-select v-model="value2" placeholder="查看原文">
+                    <el-option
+                    v-for="item in options2"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                    :disabled="item.disabled">
+                    </el-option>
+                </el-select>
                 <el-button type="primary" :disabled="canShowData" @click="showData">原文查看</el-button>
                 <el-button @click="bigData.AjdataListShow=false">取 消</el-button>
             </span>
+        </el-dialog>
+        <el-dialog title="原文查看" :visible.sync="dialogTableVisible" :before-close="beforeDialogTableVisible">
+            <el-table 
+                :data="bigdatas.fileList"
+                height="250"
+                border
+                stripe
+                style="width: 100%">
+                <el-table-column property="fileName" label="文件名" width="500"></el-table-column>
+                <el-table-column property="filePath" label="路径" width="300" v-if="false"></el-table-column>
+                <el-table-column label="操作" >
+                    <template slot-scope="scope">
+                        <el-button
+                        @click.native.prevent="showData(scope.$index, bigdatas.fileList)"
+                        type="text"
+                        size="small">
+                        查看
+                        </el-button>
+                        <el-button
+                        @click.native.prevent="downloadData(scope.$index, bigdatas.fileList)"
+                        type="text"
+                        size="small">
+                        下载
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-dialog>
+        <el-dialog title="视频文件预览" :visible.sync="showVideo" :before-close="showVideoClose" align="center" >
+            <div>
+                
+                    <el-button style="float:left" icon="el-icon-arrow-left" @click='lastVid'>上一页</el-button>
+                    
+                    <el-button style="float:right" @click='nextVid'>下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                
+            </div>
+            <div>
+                <h4>{{videoName}}</h4>
+            </div>
+            <video height="400px" :src="videoSrc" controls style="margin:0px auto"></video>
+        </el-dialog>
+        <el-dialog title="音频文件预览" :visible.sync="showAudio" :before-close="showAudioClose" align="center">
+            <div>
+                
+                    <el-button style="float:left" icon="el-icon-arrow-left" @click='lastAudio'>上一页</el-button>
+                    
+                    <el-button style="float:right" @click='nextAudio'>下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                
+            </div>
+            <div>
+                <h4>{{audioName}}</h4>
+            </div>
+            <audio height="400px" :src="audioSrc" controls="controls"></audio>
+        </el-dialog>
+        <el-dialog title="图片文件预览" :visible.sync="showPicture" :before-close="showPictureClose" align="center" v-loading="picloading">
+            <div>
+                
+                    <el-button style="float:left" icon="el-icon-arrow-left" @click='lastPic'>上一页</el-button>
+                    
+                    <el-button style="float:right" @click='nextPic'>下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                
+            </div>
+            <div>
+                <h4>{{picName}}</h4>
+            </div>
+            
+            <div style="margin-top:15px">
+                <img width="400px"  :src="pictureSrc" controls style="margin:0px auto" @load='onloadeddata' >
+            </div>
+            
+            
         </el-dialog>
     </div>
 </template>
@@ -201,11 +289,52 @@ export default {
     name:"Home",
     data(){
         return{
+            picloading:false,
             tableData:[],
             canShowData:true,
             archives:{
                 select:''
             },
+            options2: [{
+            value: 1,
+            label: '图片',
+            disabled: true
+            },{
+            value: 2,
+            label: '音频',
+            disabled: true
+            }, {
+            value: 3,
+            label: '视频',
+            disabled: true
+            }, {
+            value: 4,
+            label: '文档',
+            disabled: true
+            },{
+            value: 5,
+            label: '其他',
+            disabled: true
+            },
+            ],
+            value2:'',
+            bigdatas:{
+                filePath:'',
+                fileType:'',
+                fileList:[],
+            },
+            fileTyepAccept:"",
+            dialogTableVisible:false,
+            showVideo:false,
+            showAudio:false,
+            showPicture:false,
+            videoSrc:'',
+            videoName:'',
+            audioSrc:'',
+            audioName:'',
+            pictureSrc:'',
+            picName:'',
+            picIndex:'',
             options: [{
                 id: '123',
                 nodeName: '全宗',
@@ -251,9 +380,82 @@ export default {
             console.log(err)
         })
     },
+    watch:{
+        "value2":function(newVal,oidVal){
+            this.bigdatas.fileType=newVal;
+            switch (newVal) {
+                case 1:
+                    this.fileTyepAccept='image/*';
+                    this.bigdatas.fileType=1;
+                    break;
+                case 2:
+                    this.fileTyepAccept='audio/*';
+                    this.bigdatas.fileType=2;
+                    break;
+                case 3:
+                    this.fileTyepAccept='video/*';
+                    this.bigdatas.fileType=3;
+                    break;
+                case 4:
+                    this.fileTyepAccept='application/pdf';
+                    this.bigdatas.fileType=4;
+                    break;
+                case 5:
+                    this.fileTyepAccept='*';
+                    this.bigdatas.fileType=5;
+                    break;
+                default:
+                    break;
+            }
+
+            if(newVal!=""){
+                this.$axios.post(
+                    '/api/api/archives/data/getFileList',
+                    {   
+                        filePath:this.bigdatas.filePath,
+                        fileType:newVal,
+                    }
+                ).then(
+                    (res)=>{
+                        console.log(res)
+
+                        if('errorMsg' in res.data==false){
+                            this.dialogTableVisible=true;
+                            this.bigdatas.fileList=res.data.fileList;
+                        }else{
+                            this.operation('error',res.data.errorMsg)
+                        }
+                        
+                    }
+                ).catch(
+                    (err)=>{
+                        console.log(err)
+                    }
+
+                )
+            
+            }else{
+                this.dialogTableVisible=false;
+            }
+        },
+        "bigdatas.filePath":function(newVal,oidVal){
+            if(newVal!=''){
+                for(var i=0;i<this.options2.length;i++){
+                    this.options2[i].disabled=false
+                }
+                
+            }else{
+                for(var i=0;i<this.options2.length;i++){
+                    this.options2[i].disabled=true
+                }
+            }
+        },
+    },
     methods:{
         showDetial(index,data){
             this.canShowData=true
+            
+            console.log('11111111111111',data)
             if(data.fileCount==undefined){
                 data.fileCount=0
             }
@@ -338,16 +540,16 @@ export default {
         },
         rowClick(rowIndex, rowData, column){
             this.canShowData=true
+            this.bigdatas.filePath=''
         },
         rowWjClick(rowIndex, rowData, column){
             console.log('1',rowData)
             console.log('2',rowIndex) 
             console.log('3',column)
-            if(rowData.fileCount==1){
-                this.bigData.dataList.filePath=rowData.filePath
-                this.canShowData=false
+            if(rowData.fileCount==0){
+                this.bigdatas.filePath='';
             }else{
-                this.canShowData=true
+                this.bigdatas.filePath=rowData.filePath;
             }
         },
         handleChange(val) {     
@@ -417,21 +619,244 @@ export default {
             }
               
         },
-        showData(){
+        
+        beforeDialogTableVisible(done){
+            this.dialogTableVisible=false;
+            this.value2='';
+            done();
+        },
+        showVideoClose(done){
+            this.showVideo=false;
+            this.videoSrc='';
+            done();
+        },
+        showAudioClose(done){
+            this.showAudio=false;
+            this.audioSrc='';
+            done();
+        },
+        showPictureClose(done){
+            this.showPicture=false;
+            this.pictureSrc='';
+            done();
+        },
+        showData(index,val){
+            for(var i=0;i<this.bigdatas.fileList.length;i++){
+                if(i==index){
+                    switch (this.bigdatas.fileType) {
+                        case 1:
+                            this.picloading=true;
+                            this.picName=this.bigdatas.fileList[index].fileName
+                            this.showPicture=true
+                            this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.bigdatas.fileList[i].filePath)
+                            break;
+                        case 2:
+                            this.showAudio=true
+                            this.audioName=this.bigdatas.fileList[i].fileName
+                            this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.bigdatas.fileList[i].filePath)
+                            break;
+                        case 3:
+                            this.showVideo=true
+                            this.videoName=this.bigdatas.fileList[i].fileName
+                            this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.bigdatas.fileList[i].filePath)
+                            break;
+                        case 4:
+                            this.showPdf(this.bigdatas.fileList[i].filePath)
+                            break;
+                        case 5:
+                            this.downloadFile(this.bigdatas.fileList[i].fileName,this.bigdatas.fileList[i].filePath)
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                }
+            }
+        },
+        downloadFile(fileName,filePath){
+            var formData = new FormData();
+            formData.append('filePath',filePath)
+            this.$axios.post(
+                '/api/api/archives/data/fileDownload',
+                formData,
+                {     
+                    responseType:'blob',
+                    headers:{
+                        'Content-Type': 'multipart/form-data'
+                    }
+                },
+                
+                
+            ).then(
+                (res)=>{
+                    console.log(res)
+                    var blob = new Blob([res.data])
+                    var downloadElement = document.createElement('a');
+                    var href = window.URL.createObjectURL(blob); //创建下载的链接
+                    downloadElement.href = href;
+                    downloadElement.download = fileName; //下载后文件名
+                    document.body.appendChild(downloadElement);
+                    downloadElement.click(); //点击下载
+                    document.body.removeChild(downloadElement); //下载完成移除元素
+                    window.URL.revokeObjectURL(href); //释放掉blob对象                 
+                } 
+            ).catch(
+                (err)=>{
+                    console.log(err)
+                } 
+            )
+            
+        },
+        showPdf(filePath){
+        //创建form表单
             var temp_form = document.createElement("form");
-            temp_form.action = "http://111.231.247.67:8088/api/archives/data/showFile";
+            temp_form.action = "/api/api/archives/data/showPdf";
             //如需打开新窗口，form的target属性要设置为'_blank'
             temp_form.target = "_blank";
             temp_form.method = "post";
             temp_form.style.display = "none";
             var opt = document.createElement("textarea");
             opt.name = "filePath";
-            opt.value = this.bigData.dataList.filePath;
+            opt.value = filePath
             temp_form.appendChild(opt);
             document.body.appendChild(temp_form);
             //提交数据
             temp_form.submit();
+        },
+        downloadData(index,val){
+            for(var i=0;i<this.bigdatas.fileList.length;i++){
+                if(i==index){
+                    this.downloadFile(this.bigdatas.fileList[i].fileName,this.bigdatas.fileList[i].filePath)
+                    
+                }
+            }
+
+        },
+        lastPic(){
+            this.picloading=true;
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+    
+            if(this.picIndex!=0){
+                this.showPicture=true
+                this.picName=this.bigdatas.fileList[this.picIndex-1].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.bigdatas.fileList[this.picIndex-1].filePath)
+                this.picIndex-=1;
+                //this.picloading=false
+            }else if(this.picIndex==0){
+                this.showPicture=true
+                this.picName=this.bigdatas.fileList[this.bigdatas.fileList.length-1].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.bigdatas.fileList[this.bigdatas.fileList.length-1].filePath)
+                this.picIndex=this.bigdatas.fileList.length-1;
+                //this.picloading=false
+            }
+            
+            
+        },
+        nextPic(){
+            this.picloading=true;
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+            
+            if(this.picIndex!=this.bigdatas.fileList.length-1){
+                this.showPicture=true
+                this.picName=this.bigdatas.fileList[this.picIndex+1].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.bigdatas.fileList[this.picIndex+1].filePath)
+                this.picIndex+=1;
+                //this.picloading=false;
+            }else if(this.picIndex==this.bigdatas.fileList.length-1){
+                this.showPicture=true
+                this.picName=this.bigdatas.fileList[0].fileName
+                this.pictureSrc='/api/api/archives/data/showImage?filePath='+encodeURIComponent(this.bigdatas.fileList[0].filePath)
+                this.picIndex=0;
+                //this.picloading=false
+            }
+            
+
+        },
+        lastVid(){
+            
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+    
+            if(this.picIndex!=0){
+                this.showVideo=true
+                this.videoName=this.bigdatas.fileList[this.picIndex-1].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.bigdatas.fileList[this.picIndex-1].filePath)
+                this.picIndex-=1;
+                //this.picloading=false
+            }else if(this.picIndex==0){
+                this.showVideo=true
+                this.videoName=this.bigdatas.fileList[this.bigdatas.fileList.length-1].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.bigdatas.fileList[this.bigdatas.fileList.length-1].filePath)
+                this.picIndex=this.bigdatas.fileList.length-1;
+                //this.picloading=false
+            }
+            
+            
+        },
+        nextVid(){
+           
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+            
+            if(this.picIndex!=this.bigdatas.fileList.length-1){
+                this.showVideo=true
+                this.videoName=this.bigdatas.fileList[this.picIndex+1].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.bigdatas.fileList[this.picIndex+1].filePath)
+                this.picIndex+=1;
+                //this.picloading=false;
+            }else if(this.picIndex==this.bigdatas.fileList.length-1){
+                this.showVideo=true
+                this.videoName=this.bigdatas.fileList[0].fileName
+                this.videoSrc='/api/api/archives/data/showVideo?filePath='+encodeURIComponent(this.bigdatas.fileList[0].filePath)
+                this.picIndex=0;
+                //this.picloading=false
+            }
+            
+
+        },
+        lastAudio(){
+            
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+    
+            if(this.picIndex!=0){
+                this.showAudio=true
+                this.audioName=this.bigdatas.fileList[this.picIndex-1].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.bigdatas.fileList[this.picIndex-1].filePath)
+                this.picIndex-=1;
+                //this.picloading=false
+            }else if(this.picIndex==0){
+                this.showAudio=true
+                this.audioName=this.bigdatas.fileList[this.bigdatas.fileList.length-1].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.bigdatas.fileList[this.bigdatas.fileList.length-1].filePath)
+                this.picIndex=this.bigdatas.fileList.length-1;
+                //this.picloading=false
+            }
+            
+            
+        },
+        nextAudio(){
+            
+            console.log('++++++++++++++++++++++++++++++++',this.picIndex)
+            
+            if(this.picIndex!=this.bigdatas.fileList.length-1){
+                this.showAudio=true
+                this.audioName=this.bigdatas.fileList[this.picIndex+1].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.bigdatas.fileList[this.picIndex+1].filePath)
+                this.picIndex+=1;
+                //this.picloading=false;
+            }else if(this.picIndex==this.bigdatas.fileList.length-1){
+                this.showAudio=true
+                this.audioName=this.bigdatas.fileList[0].fileName
+                this.audioSrc='/api/api/archives/data/showAudio?filePath='+encodeURIComponent(this.bigdatas.fileList[0].filePath)
+                this.picIndex=0;
+                //this.picloading=false
+            }
+            
+
+        },
+        onloadeddata(){
+            console.log('00000000000000000000000000000')
+            this.picloading=false
         }
+        
 
     }
 }   

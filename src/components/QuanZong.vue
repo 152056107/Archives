@@ -60,15 +60,13 @@ export default {
             ],
             tableData: [
                 // {id: 4, qzName: "三晋兰台01", qzNumber: "01", treeId: "a33f9dce86e8407abbf86e38b1491895"},
-                // {id: 5, qzName: "太原工业学院02", qzNumber: "02", treeId: "657c9dee80464f2daa928cc079a355af"}
-                
-                ],
+                // {id: 5, qzName: "太原工业学院02", qzNumber: "02", treeId: "657c9dee80464f2daa928cc079a355af"}       
+            ],
             columns: [
                 {width: 60, titleAlign: 'center',columnAlign:'center',type: 'selection'},
                 {field: 'qzNumber', title:'全宗号', width: 100, titleAlign: 'center',columnAlign:'center',isResize:'true'},
-                {field: 'qzName', title: '单位名称', width: 260, titleAlign: 'center',columnAlign:'center',isResize:'true'},
-                 
-                ]
+                {field: 'qzName', title: '单位名称', width: 260, titleAlign: 'center',columnAlign:'center',isResize:'true'}, 
+            ]
         }
     },
     created(){

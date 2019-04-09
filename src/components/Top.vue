@@ -38,11 +38,14 @@
                 time:"",
                 username:"",
                 date:"",
-                token:{},
+                token:{
+                    userId:17,
+                    token:"7ceace472ce046909271fd0c90da2800"
+                },
             }
         },
         created () { 
-            this.token=JSON.parse(window.sessionStorage.getItem('archives_token'))
+            //this.token=JSON.parse(window.sessionStorage.getItem('archives_token'))
             window.setInterval(()=>{
                 var myDate = new Date();
                 this.date = '  ' + myDate.toLocaleDateString();
@@ -80,8 +83,8 @@
         methods: {
             logout(){
                 if (confirm("是否确定注销？")) {
-                    window.sessionStorage.removeItem("archives_token");
-                    window.location.href = "http://www.wangniubi.cn/archives/login.html";
+                    //window.sessionStorage.removeItem("archives_token");
+                    window.location.href = "http://192.168.1.131/archives/login.html";
                     return;
                 }
                 else {

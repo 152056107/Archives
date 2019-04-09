@@ -31,11 +31,11 @@
         name:"System",
         data(){
             return{
-                userType:null 
+                userType:1 
             }
         },
         created(){
-            this.userType=JSON.parse(window.sessionStorage.getItem("archives_token")).userType;
+            //this.userType=JSON.parse(window.sessionStorage.getItem("archives_token")).userType;
         },
         methods:{
             handleClick(val){
